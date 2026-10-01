@@ -1,0 +1,20 @@
+{
+  "name": "creative-seat",
+  "private": true,
+  "packageManager": "pnpm@10.18.1",
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "typecheck": "turbo run typecheck",
+    "preview": "pnpm --filter @creative-seat/planner preview",
+    "neon:deploy": "neon deploy",
+    "db:migrate": "pnpm --filter @creative-seat/api db:migrate",
+    "db:seed": "pnpm --filter @creative-seat/api db:seed"
+  },
+  "devDependencies": {
+    "@neon/config": "^1.8.3",
+    "@neon/env": "^1.4.8",
+    "turbo": "^2.11.6",
+    "typescript": "^7.0.2"
+  }
+}

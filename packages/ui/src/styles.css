@@ -1,0 +1,78 @@
+/*
+ * Creative Seat design tokens for Tailwind v4.
+ * Import after `@import "tailwindcss";` in an app's stylesheet.
+ * Brand-guideline editorial grid: hairline rows, paper ground, one volt accent.
+ */
+@source ".";
+
+@theme {
+  --color-ink: #14121a;
+  --color-forest: #212c26;
+  --color-volt: #bce42d;
+  --color-soft: #d7ef81;
+  --color-chalk: #e6e6e6;
+  --color-paper: #f9f9f9;
+  --color-white: #ffffff;
+  --color-muted: #6a6972;
+  --color-line: #dedede;
+  --color-weekend: #f1f1f0;
+  --color-danger: #c4432b;
+
+  /* production status */
+  --color-st-brief: #9a99a1;
+  --color-st-prod: #d9a21b;
+  --color-st-review: #3d6fd8;
+  --color-st-ok: #4e8a1e;
+  --color-st-post: #14121a;
+
+  --font-sans: "Golos Text", "Helvetica Neue", Arial, sans-serif;
+  --font-serif: "Instrument Serif", Georgia, "Times New Roman", serif;
+  --font-hand: "Caveat", "Segoe Print", cursive;
+
+  --text-eyebrow: 0.6875rem;
+  --text-eyebrow--letter-spacing: 0.09em;
+  --text-eyebrow--font-weight: 600;
+
+  --shadow-lift: 0 6px 16px -8px rgb(20 18 26 / 0.45);
+  --shadow-ink: inset 0 0 0 1.5px var(--color-ink);
+}
+
+@layer base {
+  html,
+  body {
+    background: var(--color-paper);
+    color: var(--color-ink);
+    color-scheme: light;
+  }
+  body {
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-ink);
+    outline-offset: 3px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      transition: none !important;
+      animation: none !important;
+    }
+  }
+}
+
+@utility eyebrow {
+  font-size: var(--text-eyebrow);
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+@utility wrap {
+  max-width: 1440px;
+  margin-inline: auto;
+  padding-inline: clamp(16px, 3.2vw, 48px);
+}
