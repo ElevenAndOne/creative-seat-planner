@@ -5,27 +5,27 @@ import { pool, SELECT, type Post } from "./db";
 import { viewerFrom, type Viewer } from "./auth";
 import { toColumns } from "./validate";
 
-const app = new Hono<{ Variables: { viewer: Viewer } }>();
+const api = new Hono<{ Variables: { viewer: Viewer } }>();
 
 // Auth uses bearer tokens, not cookies, so any origin may call the API;
 // writes are still gated on a verified editor token below.
-app.use("*", cors({ origin: "*", allowHeaders: ["Authorization", "Content-Type"], maxAge: 86400 }));
+api.use("*", cors({ origin: "*", allowHeaders: ["Authorization", "Content-Type"], maxAge: 86400 }));
 
-app.onError((err, c) => {
+api.onError((err, c) => {
   console.error(err);
   return c.json({ error: "Something went wrong." }, 500);
 });
 
-app.get("/", (c) => c.text("Creative Seat planner API"));
+api.get("/", (c) => c.text("Creative Seat planner API"));
 
 /** Everyone can read the plan. */
-app.get("/posts", async (c) => {
+api.get("/posts", async (c) => {
   const { rows } = await pool.query<Post>(`${SELECT} order by post_date nulls last, number`);
   return c.json(rows);
 });
 
 /** Who is calling, and can they edit? */
-app.get("/me", async (c) => {
+api.get("/me", async (c) => {
   const viewer = await viewerFrom(c.req.header("authorization"));
   return c.json(viewer ? { email: viewer.email, editor: viewer.editor } : { email: null, editor: false });
 });
@@ -39,11 +39,11 @@ const requireEditor = createMiddleware<{ Variables: { viewer: Viewer } }>(async 
   c.set("viewer", viewer);
   await next();
 });
-app.use("/posts/*", requireEditor);
-app.post("/posts", requireEditor);
+api.use("/posts/*", requireEditor);
+api.post("/posts", requireEditor);
 
 /** Create a post. Body may set any editable field; the number is assigned. */
-app.post("/posts", async (c) => {
+api.post("/posts", async (c) => {
   const parsed = toColumns(await c.req.json().catch(() => ({})));
   if ("error" in parsed) return c.json({ error: parsed.error }, 400);
   const cols = ["number", "updated_by", ...parsed.cols.map(([k]) => k)];
@@ -59,7 +59,7 @@ app.post("/posts", async (c) => {
 });
 
 /** Update some fields of a post. */
-app.patch("/posts/:id", async (c) => {
+api.patch("/posts/:id", async (c) => {
   const parsed = toColumns(await c.req.json().catch(() => null));
   if ("error" in parsed) return c.json({ error: parsed.error }, 400);
   if (!parsed.cols.length) return c.json({ error: "Nothing to update." }, 400);
@@ -73,10 +73,14 @@ app.patch("/posts/:id", async (c) => {
   return c.json(rows[0]);
 });
 
-app.delete("/posts/:id", async (c) => {
+api.delete("/posts/:id", async (c) => {
   const { rowCount } = await pool.query(`delete from posts where id = $1`, [c.req.param("id")]);
   if (!rowCount) return c.json({ error: "Post not found." }, 404);
   return c.body(null, 204);
 });
+
+// On Vercel the api service is mounted at /api and receives the prefixed path
+// (/api/posts); the Neon Function serves the same routes from its root (/posts).
+const app = new Hono().route("/api", api).route("/", api);
 
 export default app;

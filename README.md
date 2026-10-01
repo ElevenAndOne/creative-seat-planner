@@ -34,6 +34,23 @@ to the root `.env.local`. The planner reads two of them from
 - `VITE_API_URL`: the `api` function URL (`NEON_FUNCTION_API_BASE_URL`)
 - `VITE_NEON_AUTH_URL`: `NEON_AUTH_BASE_URL`
 
+### Hosting on Vercel
+
+`vercel.json` deploys the planner as the project's one service, `planner`
+(`apps/planner`). The API stays on Neon: `/api/*` is a proxy rewrite to the
+`api` Neon Function, which serves its routes under `/api` as well as at its root.
+The browser therefore calls same-origin `/api`, so on Vercel leave
+`VITE_API_URL` unset and set `VITE_NEON_AUTH_URL` only.
+
+If the Neon branch or function changes, update the rewrite destination in
+`vercel.json`. Add each Vercel domain to Neon Auth so sign-in can redirect back:
+
+```bash
+neon neon-auth domain add https://your-domain.vercel.app
+```
+
+`vercel dev -L` runs the setup locally.
+
 ### Who can edit
 
 Anyone can view the plan. Changes go through the API, which verifies the

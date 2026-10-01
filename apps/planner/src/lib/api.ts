@@ -1,7 +1,8 @@
 import type { Post, PostPatch } from "../data/types";
 import { getToken } from "./auth";
 
-const BASE = import.meta.env.VITE_API_URL.replace(/\/$/, "");
+// Same-origin /api on Vercel; set VITE_API_URL to call the API elsewhere (e.g. the Neon Function).
+const BASE = (import.meta.env.VITE_API_URL || "/api").replace(/\/$/, "");
 
 export class ApiError extends Error {
   constructor(

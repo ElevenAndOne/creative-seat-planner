@@ -1,0 +1,16 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "services": {
+    "planner": {
+      "root": "apps/planner",
+      "framework": "vite"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://br-wandering-morning-b5wjz3x1-api.compute.c-7.us-east-2.aws.neon.tech/api/:path*"
+    },
+    { "source": "/(.*)", "destination": { "service": "planner" } }
+  ]
+}
