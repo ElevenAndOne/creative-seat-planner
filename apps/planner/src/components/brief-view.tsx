@@ -1,5 +1,8 @@
 import {
+  ArrowLeftIcon,
+  ArrowRightIcon,
   Button,
+  CheckIcon,
   cn,
   ConfirmDialog,
   Panel,
@@ -86,7 +89,10 @@ export function BriefView({ post: p, plan, backTo, viewer, onSignIn, startEditin
   return (
     <>
       <nav className="flex flex-wrap items-center justify-between gap-3 py-[18px]">
-        <Button onClick={() => go(backTo)}>← Back to {backTo}</Button>
+        <Button onClick={() => go(backTo)}>
+          <ArrowLeftIcon />
+          Back to {backTo}
+        </Button>
         <div className="flex flex-wrap items-center gap-2">
           {canEdit && (
             <>
@@ -97,7 +103,7 @@ export function BriefView({ post: p, plan, backTo, viewer, onSignIn, startEditin
               )}
               <Button
                 variant={editing ? "ink" : "outline"}
-                icon={editing ? "✓" : null}
+                icon={editing ? <CheckIcon /> : null}
                 aria-pressed={editing}
                 onClick={() => setEditMode(!editMode)}
               >
@@ -106,10 +112,12 @@ export function BriefView({ post: p, plan, backTo, viewer, onSignIn, startEditin
             </>
           )}
           <Button disabled={!prev} onClick={() => prev && go(prev.id)} aria-label="Previous post">
-            ← {prev ? `No. ${pad2(prev.number)}` : "Prev"}
+            <ArrowLeftIcon />
+            {prev ? `No. ${pad2(prev.number)}` : "Prev"}
           </Button>
           <Button disabled={!next} onClick={() => next && go(next.id)} aria-label="Next post">
-            {next ? `No. ${pad2(next.number)}` : "Next"} →
+            {next ? `No. ${pad2(next.number)}` : "Next"}
+            <ArrowRightIcon />
           </Button>
         </div>
       </nav>

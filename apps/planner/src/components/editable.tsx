@@ -1,4 +1,4 @@
-import { Button, cn, Input, TextArea } from "@creative-seat/ui";
+import { Button, CloseIcon, cn, Input, PlusIcon, TextArea } from "@creative-seat/ui";
 import { useEffect, useState } from "react";
 
 /** Keeps a local draft that resets whenever the saved value changes. */
@@ -99,7 +99,7 @@ export function EditPairs({ rows, onSave, labelPlaceholder, textPlaceholder, add
               commit(next);
             }}
           >
-            ×
+            <CloseIcon />
           </button>
         </div>
       ))}
@@ -144,10 +144,11 @@ export function EditList({ items, onSave, label, placeholder }: EditListProps) {
       ))}
       <button
         type="button"
-        className="cursor-pointer self-start text-xs font-medium text-muted hover:text-ink"
+        className="inline-flex cursor-pointer items-center gap-1 self-start text-xs font-medium text-muted hover:text-ink"
         onClick={() => setDraft([...draft, ""])}
       >
-        + Add size
+        <PlusIcon size={10} />
+        Add size
       </button>
     </div>
   );

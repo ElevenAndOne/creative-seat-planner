@@ -3,6 +3,7 @@ import { Dialog as BaseDialog } from "@base-ui/react/dialog";
 import type { ReactNode } from "react";
 import { cn } from "../lib/cn";
 import { Button } from "./button";
+import { CloseIcon } from "./icons";
 
 const backdrop =
   "fixed inset-0 z-40 bg-ink/40 backdrop-blur-[2px] transition-opacity duration-150 data-starting-style:opacity-0 data-ending-style:opacity-0";
@@ -36,7 +37,7 @@ export function Dialog({ open, onOpenChange, title, description, children, class
               aria-label="Close"
               className="grid size-8 shrink-0 cursor-pointer place-items-center rounded-full border border-line bg-white hover:border-ink"
             >
-              ×
+              <CloseIcon />
             </BaseDialog.Close>
           </div>
           {children}

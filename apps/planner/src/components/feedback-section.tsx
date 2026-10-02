@@ -1,4 +1,4 @@
-import { Button, cn, Pill, Select, TextArea, useToast } from "@creative-seat/ui";
+import { Button, CheckIcon, cn, Pill, Select, TextArea, useToast } from "@creative-seat/ui";
 import { useState } from "react";
 import { COMMENT_ROLES, type Comment, type CommentRole } from "../data/types";
 import { api, ApiError } from "../lib/api";
@@ -126,7 +126,7 @@ export function FeedbackSection({ postId, viewer, comments, onChange, onSignIn }
                       ) : viewer.editor ? (
                         <Button
                           variant="ink"
-                          icon="✓"
+                          icon={<CheckIcon />}
                           onClick={() => run(() => api.setFeedbackStatus(c.id, "actioned"), "Marked to action")}
                         >
                           Action this

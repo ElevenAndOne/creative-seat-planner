@@ -1,4 +1,4 @@
-import { Button, cn } from "@creative-seat/ui";
+import { Button, cn, PlusIcon } from "@creative-seat/ui";
 import { useState, type DragEvent, type ReactNode } from "react";
 import type { PillarKey, Post } from "../data/types";
 import { addDays, DAYS, iso, MONTHS, START, weekOf, WEEKS } from "../lib/dates";
@@ -115,7 +115,7 @@ export function CalendarView({ plan, filter, onMove, canEdit, onAdd }: CalendarV
               : "Click a post to open its brief. Sign in as an editor to reschedule."}
           </p>
           {canEdit && (
-            <Button variant="ink" icon="+" onClick={onAdd}>
+            <Button variant="ink" icon={<PlusIcon />} onClick={onAdd}>
               Add post
             </Button>
           )}

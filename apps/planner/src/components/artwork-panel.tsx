@@ -1,4 +1,4 @@
-import { Chair, cn, useToast } from "@creative-seat/ui";
+import { Chair, ChevronLeftIcon, ChevronRightIcon, cn, PlayIcon, useToast } from "@creative-seat/ui";
 import { useEffect, useState } from "react";
 import type { ArtworkSlide, PillarKey, Post } from "../data/types";
 import { api, ApiError } from "../lib/api";
@@ -128,8 +128,8 @@ export function ArtworkPanel({ post: p, slides, viewer, onChange }: ArtworkPanel
             >
               <img src={t.stillUrl} alt="" className="size-full object-cover" />
               {t.videoUrl && (
-                <i aria-hidden="true" className="absolute right-0.5 bottom-0.5 rounded bg-ink/80 px-1 text-[0.5rem] text-paper not-italic">
-                  ▶
+                <i aria-hidden="true" className="absolute right-0.5 bottom-0.5 rounded bg-ink/80 px-0.5 py-0.5 text-paper not-italic">
+                  <PlayIcon size={7} />
                 </i>
               )}
             </button>
@@ -182,11 +182,11 @@ function SlideNav({ dir, disabled, onClick }: { dir: "prev" | "next"; disabled: 
       disabled={disabled}
       onClick={onClick}
       className={cn(
-        "absolute top-1/2 grid size-8 -translate-y-1/2 cursor-pointer place-items-center rounded-full bg-paper/90 text-lg shadow-sm hover:bg-white disabled:hidden",
+        "absolute top-1/2 grid size-8 -translate-y-1/2 cursor-pointer place-items-center rounded-full bg-paper/90 shadow-sm hover:bg-white disabled:hidden",
         dir === "prev" ? "left-2" : "right-2",
       )}
     >
-      {dir === "prev" ? "‹" : "›"}
+      {dir === "prev" ? <ChevronLeftIcon size={14} /> : <ChevronRightIcon size={14} />}
     </button>
   );
 }

@@ -3,6 +3,17 @@ export { Button, type ButtonProps } from "./components/button";
 export { Chair } from "./components/chair";
 export { ConfirmDialog, Dialog, type ConfirmDialogProps, type DialogProps } from "./components/dialog";
 export { FilterChip, type FilterChipProps } from "./components/filter-chip";
+export {
+  ArrowLeftIcon,
+  ArrowRightIcon,
+  ArrowUpRightIcon,
+  CheckIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  CloseIcon,
+  PlayIcon,
+  PlusIcon,
+} from "./components/icons";
 export { Input, TextArea, type InputProps } from "./components/input";
 export { Panel, PanelHeader } from "./components/panel";
 export { Pill, type PillProps } from "./components/pill";

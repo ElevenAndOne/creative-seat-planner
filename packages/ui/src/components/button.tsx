@@ -1,13 +1,14 @@
 import { Button as BaseButton } from "@base-ui/react/button";
 import type { ComponentProps, ReactNode } from "react";
 import { cn } from "../lib/cn";
+import { ArrowUpRightIcon } from "./icons";
 
 type BaseProps = ComponentProps<typeof BaseButton>;
 
 export interface ButtonProps extends Omit<BaseProps, "className"> {
   variant?: "outline" | "ink";
   className?: string;
-  /** Trailing glyph shown in a volt disc on the `ink` variant. */
+  /** Trailing SVG icon shown in a volt disc on the `ink` variant. */
   icon?: ReactNode;
 }
 
@@ -33,11 +34,7 @@ export function Button({ variant = "outline", className, icon, children, ...prop
           aria-hidden="true"
           className="grid size-[26px] place-items-center rounded-full bg-volt text-[0.8rem] not-italic text-ink transition-transform duration-200 group-hover:-rotate-12 group-hover:scale-106"
         >
-          {icon ?? (
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-              <path d="M3.5 8.5 8.5 3.5M4.25 3.5H8.5v4.25" stroke="currentColor" strokeWidth="1.4" />
-            </svg>
-          )}
+          {icon ?? <ArrowUpRightIcon />}
         </i>
       )}
     </BaseButton>
