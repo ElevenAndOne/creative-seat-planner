@@ -33,7 +33,11 @@ export function Button({ variant = "outline", className, icon, children, ...prop
           aria-hidden="true"
           className="grid size-[26px] place-items-center rounded-full bg-volt text-[0.8rem] not-italic text-ink transition-transform duration-200 group-hover:-rotate-12 group-hover:scale-106"
         >
-          {icon ?? "↗"}
+          {icon ?? (
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+              <path d="M3.5 8.5 8.5 3.5M4.25 3.5H8.5v4.25" stroke="currentColor" strokeWidth="1.4" />
+            </svg>
+          )}
         </i>
       )}
     </BaseButton>
