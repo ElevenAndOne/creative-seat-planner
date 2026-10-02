@@ -1,0 +1,17 @@
+{
+  "name": "Creative Seat — Publish to planner",
+  "id": "creative-seat-publish-to-planner",
+  "api": "1.0.0",
+  "main": "dist/code.js",
+  "ui": "ui.html",
+  "editorType": ["figma"],
+  "documentAccess": "dynamic-page",
+  "networkAccess": {
+    "allowedDomains": [
+      "https://br-wandering-morning-b5wjz3x1-api.compute.c-7.us-east-2.aws.neon.tech",
+      "https://creative-seat-planner.vercel.app"
+    ],
+    "devAllowedDomains": ["http://localhost:3000"],
+    "reasoning": "Uploads slide artwork and videos to the Creative Seat planner API."
+  }
+}

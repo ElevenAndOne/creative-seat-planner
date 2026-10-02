@@ -7,7 +7,7 @@
     "build": "turbo run build",
     "typecheck": "turbo run typecheck",
     "preview": "pnpm --filter @creative-seat/planner preview",
-    "neon:deploy": "neon deploy",
+    "neon:deploy": "neon deploy --env .env.local",
     "db:migrate": "pnpm --filter @creative-seat/api db:migrate",
     "db:seed": "pnpm --filter @creative-seat/api db:seed"
   },

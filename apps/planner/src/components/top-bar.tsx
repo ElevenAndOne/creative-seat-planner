@@ -3,12 +3,12 @@ import { useState } from "react";
 import { authClient } from "../lib/auth";
 import { go } from "../lib/use-hash-route";
 import type { Viewer } from "../lib/use-viewer";
-import { SignInDialog } from "./sign-in-dialog";
+import { PluginKeysDialog } from "./plugin-keys-dialog";
 
 export type ListView = "calendar" | "content";
 
-export function TopBar({ view, viewer }: { view: ListView | null; viewer: Viewer }) {
-  const [signInOpen, setSignInOpen] = useState(false);
+export function TopBar({ view, viewer, onSignIn }: { view: ListView | null; viewer: Viewer; onSignIn: () => void }) {
+  const [pluginOpen, setPluginOpen] = useState(false);
 
   return (
     <header className="sticky top-[env(safe-area-inset-top,0px)] z-20 border-b border-line bg-paper/92 backdrop-blur-sm">
@@ -40,6 +40,11 @@ export function TopBar({ view, viewer }: { view: ListView | null; viewer: Viewer
                 />
                 {viewer.editor ? "Editing as" : "View only ·"} <span className="max-w-[22ch] truncate text-ink">{viewer.email}</span>
               </span>
+              {viewer.editor && (
+                <Button className="h-8 px-3 text-[0.8125rem]" onClick={() => setPluginOpen(true)}>
+                  Figma plugin
+                </Button>
+              )}
               <Button className="h-8 px-3 text-[0.8125rem]" onClick={() => authClient.signOut()}>
                 Sign out
               </Button>
@@ -50,14 +55,14 @@ export function TopBar({ view, viewer }: { view: ListView | null; viewer: Viewer
                 <i className="size-[7px] rounded-full bg-st-brief" />
                 View only
               </span>
-              <Button className="h-8 px-3 text-[0.8125rem]" onClick={() => setSignInOpen(true)}>
+              <Button className="h-8 px-3 text-[0.8125rem]" onClick={onSignIn}>
                 Sign in to edit
               </Button>
             </>
           )}
         </div>
       </div>
-      <SignInDialog open={signInOpen} onOpenChange={setSignInOpen} />
+      {viewer.editor && <PluginKeysDialog open={pluginOpen} onOpenChange={setPluginOpen} />}
     </header>
   );
 }

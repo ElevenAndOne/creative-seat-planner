@@ -7,6 +7,7 @@ const issuer = new URL(process.env.NEON_AUTH_BASE_URL!).origin;
 export interface Viewer {
   userId: string;
   email: string;
+  name: string;
   editor: boolean;
 }
 
@@ -25,13 +26,13 @@ export async function viewerFrom(authorization: string | undefined): Promise<Vie
     return null;
   }
   // Identity comes from the verified subject, never from the request body.
-  const { rows } = await pool.query<{ email: string; editor: boolean }>(
-    `select u.email,
+  const { rows } = await pool.query<{ email: string; name: string; editor: boolean }>(
+    `select u.email, coalesce(nullif(u.name, ''), split_part(u.email, '@', 1)) as name,
             exists (select 1 from editors e where lower(e.email) = lower(u.email)) as editor
      from neon_auth."user" u
      where u.id::text = $1 and coalesce(u.banned, false) = false`,
     [sub],
   );
   const row = rows[0];
-  return row ? { userId: sub, email: row.email, editor: row.editor } : null;
+  return row ? { userId: sub, email: row.email, name: row.name, editor: row.editor } : null;
 }

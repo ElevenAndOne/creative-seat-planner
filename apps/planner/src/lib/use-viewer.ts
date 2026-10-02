@@ -5,6 +5,8 @@ import { authClient } from "./auth";
 export interface Viewer {
   /** Session still resolving. */
   loading: boolean;
+  /** Neon Auth user id; matches a comment's authorId. */
+  id: string | null;
   email: string | null;
   name: string | null;
   /** Signed in and on the editor list (checked by the API). */
@@ -31,6 +33,7 @@ export function useViewer(): Viewer {
   const checked = user && editor?.for === user.id;
   return {
     loading: session.isPending || (!!user && !checked),
+    id: user?.id ?? null,
     email: user?.email ?? null,
     name: user?.name ?? null,
     editor: !!checked && editor.editor,

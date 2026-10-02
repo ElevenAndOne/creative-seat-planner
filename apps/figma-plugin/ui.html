@@ -1,0 +1,161 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<style>
+  :root {
+    --ink: #14121a; --volt: #bce42d; --paper: #f9f9f9; --line: #dedede; --muted: #6a6972; --danger: #c4432b; --ok: #4e8a1e;
+    font: 12px/1.45 Inter, -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+  body { margin: 0; padding: 14px; background: var(--paper); color: var(--ink); }
+  h1 { font-size: 14px; margin: 0 0 2px; }
+  p { margin: 0; }
+  .muted { color: var(--muted); }
+  label { display: block; margin-top: 10px; font-weight: 600; }
+  input[type=text], input[type=password] {
+    box-sizing: border-box; width: 100%; margin-top: 4px; height: 30px; padding: 0 8px;
+    border: 1px solid var(--line); border-radius: 8px; background: #fff; font: inherit;
+  }
+  input:focus { outline: none; border-color: var(--ink); }
+  button {
+    font: inherit; font-weight: 600; cursor: pointer; border-radius: 999px; padding: 7px 14px;
+    border: 1px solid var(--line); background: #fff; color: var(--ink);
+  }
+  button.primary { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  button:disabled { opacity: .45; cursor: default; }
+  .row { display: flex; gap: 8px; align-items: center; justify-content: space-between; margin-top: 12px; }
+  .card { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 10px; margin-top: 10px; }
+  .group { border-top: 1px solid var(--line); padding: 8px 0; }
+  .group:first-child { border-top: 0; }
+  .group label { display: flex; gap: 8px; align-items: flex-start; margin: 0; font-weight: 600; }
+  .slides { margin: 3px 0 0 22px; color: var(--muted); }
+  .tag { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+         background: var(--volt); border-radius: 999px; padding: 1px 6px; margin-left: 4px; color: var(--ink); }
+  .warn { color: var(--danger); font-weight: 500; }
+  #status { margin-top: 10px; min-height: 16px; }
+  #status.error { color: var(--danger); }
+  #status.ok { color: var(--ok); }
+  progress { width: 100%; margin-top: 8px; accent-color: var(--ink); }
+  details summary { cursor: pointer; font-weight: 600; margin-top: 10px; }
+  #list { max-height: 300px; overflow: auto; }
+</style>
+</head>
+<body>
+  <h1>Publish to the Creative Seat planner</h1>
+  <p class="muted">Frames named <b>CS - &lt;post title&gt; - Slide 01</b> on this page become that brief’s artwork. Animated frames are exported as MP4.</p>
+
+  <details id="setup">
+    <summary>Connection</summary>
+    <label>Plugin key <input id="key" type="password" placeholder="csp_… (planner → Figma plugin)" autocomplete="off" /></label>
+    <label>API address <input id="api" type="text" /></label>
+    <div class="row"><span class="muted" id="who"></span><button id="save">Save &amp; connect</button></div>
+  </details>
+
+  <div class="card" id="results" hidden>
+    <div class="row" style="margin-top:0">
+      <b id="page"></b>
+      <button id="rescan">Scan again</button>
+    </div>
+    <div id="list"></div>
+  </div>
+
+  <progress id="bar" value="0" max="1" hidden></progress>
+  <p id="status" role="status"></p>
+
+  <div class="row">
+    <button id="close">Close</button>
+    <button id="publish" class="primary" disabled>Publish selected</button>
+  </div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const send = (msg) => parent.postMessage({ pluginMessage: msg }, "*");
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+  let state = { posts: [], groups: [] };
+
+  function status(text, kind) {
+    const el = $("status");
+    el.textContent = text || "";
+    el.className = kind || "";
+  }
+
+  function render() {
+    const byMatch = new Map(state.posts.map((p) => [p.match, p]));
+    const list = $("list");
+    if (!state.groups.length) {
+      list.innerHTML = '<p class="muted" style="padding:8px 0">No “CS - … - Slide NN” frames on this page.</p>';
+    } else {
+      list.innerHTML = state.groups.map((g, i) => {
+        const p = byMatch.get(g.match);
+        const animated = g.slides.filter((s) => s.animated).length;
+        return `<div class="group">
+          <label><input type="checkbox" data-i="${i}" ${p ? "checked" : "disabled"} />
+            <span>${p ? `No. ${String(p.number).padStart(2, "0")} ${esc(p.title)}` : esc(g.title)}
+              ${p ? "" : '<br><span class="warn">No post with this title in the planner</span>'}</span></label>
+          <div class="slides">${g.slides.length} slide${g.slides.length === 1 ? "" : "s"}${animated ? ` <span class="tag">${animated} animated</span>` : ""}</div>
+        </div>`;
+      }).join("");
+    }
+    $("results").hidden = false;
+    updateButton();
+  }
+
+  function selected() {
+    const byMatch = new Map(state.posts.map((p) => [p.match, p]));
+    return [...document.querySelectorAll("#list input:checked")].map((el) => {
+      const g = state.groups[+el.dataset.i];
+      return { postId: byMatch.get(g.match).id, slides: g.slides };
+    });
+  }
+
+  function updateButton() {
+    $("publish").disabled = !selected().length;
+  }
+
+  $("list").addEventListener("change", updateButton);
+  $("save").onclick = () => {
+    status("Connecting…");
+    send({ type: "save-settings", settings: { key: $("key").value.trim(), apiUrl: $("api").value.trim() } });
+  };
+  $("rescan").onclick = () => { status("Scanning…"); send({ type: "scan" }); };
+  $("close").onclick = () => send({ type: "close" });
+  $("publish").onclick = () => {
+    const groups = selected();
+    if (!groups.length) return;
+    $("publish").disabled = true;
+    $("bar").hidden = false;
+    $("bar").value = 0;
+    status("Starting…");
+    send({ type: "publish", groups });
+  };
+
+  onmessage = (e) => {
+    const msg = e.data.pluginMessage;
+    if (!msg) return;
+    if (msg.type === "settings") {
+      $("key").value = msg.settings.key;
+      $("api").value = msg.settings.apiUrl;
+      $("setup").open = !msg.settings.key;
+    } else if (msg.type === "session") {
+      state = { posts: msg.posts, groups: msg.groups };
+      $("who").textContent = "Connected as " + msg.owner;
+      $("page").textContent = "Page: " + msg.page;
+      $("setup").open = false;
+      status("");
+      render();
+    } else if (msg.type === "status") {
+      status(msg.text, msg.error ? "error" : "");
+      if (msg.error) { $("setup").open = /key/i.test(msg.text); updateButton(); $("bar").hidden = true; }
+    } else if (msg.type === "progress") {
+      $("bar").max = msg.total;
+      $("bar").value = msg.done;
+      status(msg.text);
+    } else if (msg.type === "published") {
+      $("bar").value = $("bar").max;
+      status(`Published ${msg.total} slide${msg.total === 1 ? "" : "s"}. Open the brief in the planner to see them.`, "ok");
+      updateButton();
+    }
+  };
+</script>
+</body>
+</html>

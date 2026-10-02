@@ -4,6 +4,7 @@ import { BriefView } from "./components/brief-view";
 import { CalendarView } from "./components/calendar-view";
 import { ContentView } from "./components/content-view";
 import { Legend } from "./components/legend";
+import { SignInDialog } from "./components/sign-in-dialog";
 import { Summary } from "./components/summary";
 import { TopBar, type ListView } from "./components/top-bar";
 import type { PillarKey } from "./data/types";
@@ -20,6 +21,8 @@ export function App() {
   const [filter, setFilter] = useState<PillarKey | null>(null);
   const [lastView, setLastView] = useState<ListView>("calendar");
   const [justCreated, setJustCreated] = useState<string | null>(null);
+  const [signInOpen, setSignInOpen] = useState(false);
+  const openSignIn = () => setSignInOpen(true);
 
   const post = plan.posts.find((p) => p.id === hash);
   const view: ListView = hash === "content" ? "content" : post ? lastView : "calendar";
@@ -40,7 +43,8 @@ export function App() {
 
   return (
     <>
-      <TopBar view={post ? null : view} viewer={viewer} />
+      <TopBar view={post ? null : view} viewer={viewer} onSignIn={openSignIn} />
+      <SignInDialog open={signInOpen} onOpenChange={setSignInOpen} />
       {!post && <Summary plan={plan} />}
       <main className="wrap pb-16">
         {plan.load.status === "loading" ? (
@@ -56,7 +60,8 @@ export function App() {
             post={post}
             plan={plan}
             backTo={lastView}
-            canEdit={viewer.editor}
+            viewer={viewer}
+            onSignIn={openSignIn}
             startEditing={justCreated === post.id}
           />
         ) : (

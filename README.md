@@ -51,6 +51,39 @@ neon neon-auth domain add https://your-domain.vercel.app
 
 `vercel dev -L` runs the setup locally.
 
+### Artwork from Figma
+
+Each brief shows its slides from the Creative Seat Figma file
+(`9hpD5w4IPnt1gEzhW00IaI`, page **CS_Social Media**). Frames are matched by
+name: `CS - <post title> - Slide 01`, `… - Slide 02`, and so on.
+
+- **Stills — Refresh artwork.** An editor clicks **Refresh artwork** on a brief.
+  The API finds the frames with Figma's REST API, renders them to PNG at 2× and
+  stores them in the `storage` bucket. It needs a Figma personal access token
+  with the `file_content:read` scope, created by someone with a Dev or Full seat
+  (View-seat tokens are limited to a handful of calls a month). Add it to the root
+  `.env.local` as `FIGMA_TOKEN=…`, then run `pnpm neon:deploy`.
+- **Videos — the Figma plugin** (`apps/figma-plugin`). Figma's public API can't
+  export video, but a plugin can. The plugin exports every matching frame as a
+  PNG and, for frames with Motion keyframes, an MP4 rendered by Figma, then
+  uploads them to the brief.
+
+To install the plugin (Figma desktop app):
+
+1. `pnpm --filter @creative-seat/figma-plugin build`
+2. In Figma: **Plugins → Development → Import plugin from manifest…** and pick
+   `apps/figma-plugin/manifest.json`.
+3. In the planner, sign in as an editor, open **Figma plugin** in the header,
+   create a key, and paste the key and API address into the plugin's
+   **Connection** panel.
+4. Open the CS_Social Media page, run the plugin, tick the posts and
+   **Publish selected**.
+
+Keys belong to the editor who made them and stop working if that person is
+removed from `editors`. Revoke them from the same dialog.
+
+Feedback, inspiration images and artwork are only visible to signed-in users.
+
 ### Who can edit
 
 Anyone can view the plan. Changes go through the API, which verifies the

@@ -1,6 +1,5 @@
 import {
   Button,
-  Chair,
   cn,
   ConfirmDialog,
   Panel,
@@ -18,15 +17,13 @@ import type { PillarKey, Post, PostPatch, Series, StatusKey } from "../data/type
 import { fmt, pad2 } from "../lib/dates";
 import { go } from "../lib/use-hash-route";
 import type { Plan } from "../lib/use-plan";
+import { useBriefExtras } from "../lib/use-brief-extras";
+import type { Viewer } from "../lib/use-viewer";
+import { ArtworkPanel } from "./artwork-panel";
 import { EditList, EditPairs, EditText } from "./editable";
+import { FeedbackSection } from "./feedback-section";
+import { InspirationSection } from "./inspiration-section";
 import type { ListView } from "./top-bar";
-
-const ART: Record<PillarKey, string> = {
-  service: "bg-forest text-volt",
-  seat: "bg-volt text-ink",
-  work: "bg-chalk text-ink",
-  backlog: "bg-white text-ink shadow-ink",
-};
 
 const STATUS_OPTIONS = STATUSES.map((s) => ({ value: s.k, label: s.name, icon: <StatusDot color={s.color} /> }));
 const PILLAR_OPTIONS = PILLAR_KEYS.map((k) => ({ value: k, label: `${PILLARS[k].name} · ${PILLARS[k].role}` }));
@@ -39,13 +36,16 @@ export interface BriefViewProps {
   post: Post;
   plan: Plan;
   backTo: ListView;
-  /** Signed-in editor: may change the date and status, and switch to edit mode. */
-  canEdit: boolean;
+  viewer: Viewer;
+  onSignIn: () => void;
   /** Open straight into edit mode (e.g. a post that was just created). */
   startEditing?: boolean;
 }
 
-export function BriefView({ post: p, plan, backTo, canEdit, startEditing }: BriefViewProps) {
+export function BriefView({ post: p, plan, backTo, viewer, onSignIn, startEditing }: BriefViewProps) {
+  // Signed-in editor: may change the date and status, and switch to edit mode.
+  const canEdit = viewer.editor;
+  const extras = useBriefExtras(p.id, !!viewer.email);
   const toast = useToast();
   const [capTab, setCapTab] = useState<"li" | "ig">("li");
   const [editMode, setEditMode] = useState(!!startEditing);
@@ -114,7 +114,7 @@ export function BriefView({ post: p, plan, backTo, canEdit, startEditing }: Brie
         </div>
       </nav>
 
-      <div className="grid items-end gap-x-10 gap-y-6 border-t border-ink pt-7 pb-8 min-[761px]:grid-cols-[minmax(0,1fr)_220px]">
+      <div className="grid items-end gap-x-10 gap-y-6 border-t border-ink pt-7 pb-8 min-[761px]:grid-cols-[minmax(0,1fr)_260px]">
         <div>
           {editing ? (
             <div className="mb-[18px] flex flex-wrap gap-3">
@@ -173,15 +173,7 @@ export function BriefView({ post: p, plan, backTo, canEdit, startEditing }: Brie
             </p>
           )}
         </div>
-        <div
-          className={cn(
-            "relative hidden aspect-[4/5] place-items-center overflow-hidden rounded-[22px] min-[761px]:grid",
-            ART[p.pillar],
-          )}
-        >
-          <span className="absolute top-2.5 left-3.5 font-serif text-[3.2rem] leading-none">{pad2(p.number)}</span>
-          <Chair className="w-[38%]" />
-        </div>
+        <ArtworkPanel post={p} slides={extras.slides} viewer={viewer} onChange={extras.refresh} />
       </div>
 
       <dl className="grid grid-cols-[repeat(auto-fit,minmax(170px,1fr))] border-y border-line">
@@ -318,6 +310,12 @@ export function BriefView({ post: p, plan, backTo, canEdit, startEditing }: Brie
                 )}
               </div>
             </div>
+          </Section>
+          <Section k="04" title="Inspiration" note={extras.images.length ? `· ${extras.images.length} image${extras.images.length === 1 ? "" : "s"}` : undefined}>
+            <InspirationSection postId={p.id} viewer={viewer} images={extras.images} onChange={extras.refresh} onSignIn={onSignIn} />
+          </Section>
+          <Section k="05" title="Feedback">
+            <FeedbackSection postId={p.id} viewer={viewer} comments={extras.comments} onChange={extras.refresh} onSignIn={onSignIn} />
           </Section>
           {editing && (
             <div className="mt-12 flex items-center justify-between gap-4 rounded-2xl border border-danger/30 p-4">
@@ -457,12 +455,13 @@ function ReadSpec({ term, children }: { term: string; children: ReactNode }) {
   );
 }
 
-function Section({ k, title, children }: { k: string; title: string; children: ReactNode }) {
+function Section({ k, title, note, children }: { k: string; title: string; note?: string; children: ReactNode }) {
   return (
     <section className="mb-9">
       <h2 className="mb-3.5 flex items-baseline gap-3 border-b border-line pb-2.5 text-[1.0625rem] font-bold">
         <span className="text-xs font-medium text-muted tabular-nums">{k}</span>
         {title}
+        {note && <span className="text-[0.8125rem] font-normal text-muted">{note}</span>}
       </h2>
       {children}
     </section>

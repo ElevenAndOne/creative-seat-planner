@@ -1,14 +1,16 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { createMiddleware } from "hono/factory";
+import { artwork, plugin } from "./artwork";
+import { viewerFrom } from "./auth";
+import { brief } from "./brief";
 import { pool, SELECT, type Post } from "./db";
-import { viewerFrom, type Viewer } from "./auth";
+import { requireEditor, type Env } from "./middleware";
 import { toColumns } from "./validate";
 
-const api = new Hono<{ Variables: { viewer: Viewer } }>();
+const api = new Hono<Env>();
 
 // Auth uses bearer tokens, not cookies, so any origin may call the API;
-// writes are still gated on a verified editor token below.
+// reads of private data and all writes are gated per route (see middleware.ts).
 api.use("*", cors({ origin: "*", allowHeaders: ["Authorization", "Content-Type"], maxAge: 86400 }));
 
 api.onError((err, c) => {
@@ -27,23 +29,17 @@ api.get("/posts", async (c) => {
 /** Who is calling, and can they edit? */
 api.get("/me", async (c) => {
   const viewer = await viewerFrom(c.req.header("authorization"));
-  return c.json(viewer ? { email: viewer.email, editor: viewer.editor } : { email: null, editor: false });
+  return c.json(
+    viewer ? { email: viewer.email, name: viewer.name, editor: viewer.editor } : { email: null, name: null, editor: false },
+  );
 });
 
-// Everything below changes data: editors only.
-const requireEditor = createMiddleware<{ Variables: { viewer: Viewer } }>(async (c, next) => {
-  if (c.req.method === "GET" || c.req.method === "OPTIONS") return next();
-  const viewer = await viewerFrom(c.req.header("authorization"));
-  if (!viewer) return c.json({ error: "Sign in to edit." }, 401);
-  if (!viewer.editor) return c.json({ error: "This account can view the plan but not edit it." }, 403);
-  c.set("viewer", viewer);
-  await next();
-});
-api.use("/posts/*", requireEditor);
-api.post("/posts", requireEditor);
+api.route("/", brief);
+api.route("/", artwork);
+api.route("/", plugin);
 
 /** Create a post. Body may set any editable field; the number is assigned. */
-api.post("/posts", async (c) => {
+api.post("/posts", requireEditor, async (c) => {
   const parsed = toColumns(await c.req.json().catch(() => ({})));
   if ("error" in parsed) return c.json({ error: parsed.error }, 400);
   const cols = ["number", "updated_by", ...parsed.cols.map(([k]) => k)];
@@ -59,7 +55,7 @@ api.post("/posts", async (c) => {
 });
 
 /** Update some fields of a post. */
-api.patch("/posts/:id", async (c) => {
+api.patch("/posts/:id", requireEditor, async (c) => {
   const parsed = toColumns(await c.req.json().catch(() => null));
   if ("error" in parsed) return c.json({ error: parsed.error }, 400);
   if (!parsed.cols.length) return c.json({ error: "Nothing to update." }, 400);
@@ -73,7 +69,7 @@ api.patch("/posts/:id", async (c) => {
   return c.json(rows[0]);
 });
 
-api.delete("/posts/:id", async (c) => {
+api.delete("/posts/:id", requireEditor, async (c) => {
   const { rowCount } = await pool.query(`delete from posts where id = $1`, [c.req.param("id")]);
   if (!rowCount) return c.json({ error: "Post not found." }, 404);
   return c.body(null, 204);

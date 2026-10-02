@@ -1,0 +1,15 @@
+{
+  "name": "@creative-seat/figma-plugin",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "esbuild src/code.ts --bundle --target=es2017 --outfile=dist/code.js",
+    "watch": "esbuild src/code.ts --bundle --target=es2017 --outfile=dist/code.js --watch",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "devDependencies": {
+    "@figma/plugin-typings": "^1.140.0",
+    "esbuild": "^0.25.0"
+  }
+}
